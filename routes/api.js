@@ -4,7 +4,21 @@ const Ninja = require('../models/ninja');
 
 // get a list of ninjas from the db
 router.get('/ninjas', function(req, res, next){
-  res.send({type: 'GET'});
+  // Ninja.find({}).then(function(ninjas){
+  //   res.send(ninjas);
+  // });
+  Ninja.geoNear({
+    type: 'Point',
+    coordinates: [parseFloat(req.query.lng), parseFloat(req.query.lat)]
+  },
+  {
+    maxDistance: 100000,
+    spherical: true
+  }
+).then(function(ninjas){
+  res.send(ninjas);
+});
+
 });
 
 // add a new ninja
@@ -16,12 +30,19 @@ router.post('/ninjas', function(req, res, next){
 
 // update a ninja info
 router.put('/ninjas/:id', function(req, res, next){
-  res.send({type: 'GET'});
+  Ninja.findByIdAndUpdate({
+    _id: req.params.id}, req.body).then(function(){
+      Ninja.findOne({_id: req.params.id}).then(function(ninja){
+      res.send(ninja);
+      });
+    });
 });
 
 // delete a ninja
 router.delete('/ninjas/:id', function(req, res, next){
-  res.send({type: 'DELETE'});
+  Ninja.findByIdAndRemove({_id:req.params.id}).then(function(ninja){
+    res.send(ninja);
+  });
 });
 
 module.exports = router;
